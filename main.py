@@ -1,64 +1,41 @@
+import pyperclip
 import os
-import sys
 import time
+import argparse
 
-# Platform-specific imports
-if sys.platform == 'darwin':
-    use_carbon = True
-    if use_carbon:
-        from MacSharedClipboard import *
+def read_clipboard_to_file(filename):
+    clipboard_content = pyperclip.paste()
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(clipboard_content)
+    print(f"Clipboard content saved to {filename}")
+
+def write_file_to_clipboard(filename):
+    if os.path.exists(filename):
+        with open(filename, 'r', encoding='utf-8') as f:
+            file_content = f.read()
+        pyperclip.copy(file_content)
+        print(f"Content from {filename} copied to clipboard")
     else:
-        from CarbonSharedClipboard import *
-elif sys.platform == 'win32':
-    from WindowsSharedClipboard import *
+        print(f"File {filename} not found")
 
-def monitorClipboard(clipboard_file):
-    prev_data = ''
-    while True:
-        time.sleep(1)
-        try:
-            openClipboard()
-        except:
-            print('OpenClipboard() failed')
-            continue
-        
-        try:
-            try:
-                data = getClipboardData()
-                if data and data != prev_data:
-                    open(clipboard_file, 'w').write(data)
-                    print('writing %s to file' % data)
-                    prev_data = data
-            except Exception as e:
-                print(e)
-                pass
-        finally:
-            closeClipboard()
-        
-        try:
-            data = open(clipboard_file, 'r').read()
-            if data != prev_data:
-                setClipboardData(data)
-                print('putting %s in clipboard' % data)
-                prev_data = data
-        except Exception as e:
-            print(e)
-            pass
+def monitor_clipboard(filename):
+    last_content = pyperclip.paste()
+    print("Monitoring clipboard. Press Ctrl+C to stop.")
+    try:
+        while True:
+            current_content = pyperclip.paste()
+            if current_content != last_content:
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(current_content)
+                print(f"New clipboard content saved to {filename}")
+                last_content = current_content
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Clipboard monitoring stopped")
 
-def main():
-    usage = """
-    Usage: python SharedClipboard.py <filename>
-    The filename should refer to a writable existing file. The file
-    should be on a shared location visible and writable to all the
-    shared clipboard instances on all machines.
-    """
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Cross-platform clipboard sharing tool")
+    parser.add_argument("filename", help="File to read from or write to")
+    args = parser.parse_args()
 
-    if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
-        print(usage)
-        sys.exit(1)
-
-    clipboard_file = sys.argv[1]
-    monitorClipboard(clipboard_file)
-
-if __name__ == '__main__':
-    main()
+    monitor_clipboard(args.filename)
