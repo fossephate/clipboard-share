@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 pyperclip = "*"
+python-dotenv = "*"
+requests = "*"
 
 [dev-packages]
 
