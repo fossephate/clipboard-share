@@ -1,0 +1,1 @@
+python.exe main.py W:\\clip.txt
