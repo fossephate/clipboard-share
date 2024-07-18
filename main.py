@@ -71,7 +71,7 @@ def monitor_clipboard_file(filename):
 
 def read_clipboard_to_api():
     clipboard_content = pyperclip.paste().replace('\r\n', '\n')
-    data = {"content": clipboard_content}
+    data = {"text": clipboard_content}
     response = requests.put(BASE_URL, json=data, headers=headers)
     if response.status_code == 200:
         print("Clipboard content saved to JSONbin.io")
@@ -82,9 +82,9 @@ def write_api_to_clipboard():
     response = requests.get(BASE_URL, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        content = data["record"]["content"]
+        content = data["record"]["text"]
         pyperclip.copy(content)
-        print("Content from JSONbin.io copied to clipboard")
+        print("text from JSONbin.io copied to clipboard")
     else:
         print("Failed to retrieve content from JSONbin.io")
 
@@ -92,9 +92,9 @@ def read_api():
     response = requests.get(BASE_URL, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        return data["record"]["content"]
+        return data["record"]["text"]
     else:
-        print("Failed to retrieve content from JSONbin.io")
+        print("Failed to retrieve text from JSONbin.io")
         return None
     
 
@@ -106,7 +106,7 @@ def monitor_clipboard_api():
         while True:
             current_clip_content = pyperclip.paste().replace('\r\n', '\n')
             if current_clip_content != last_clip_content:
-                data = {"content": current_clip_content}
+                data = {"text": current_clip_content}
                 response = requests.put(BASE_URL, json=data, headers=headers)
                 if response.status_code == 200:
                     print("New clipboard content saved to JSONbin.io")
